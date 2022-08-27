@@ -1,7 +1,30 @@
 const express = require('express');
 const app = express();
 const cors = require('cors')
+
+const mongoose =require("mongoose");
+require ('dotenv').config();
+const messageRoute = require("./routes/messages");
+const conversationRoute = require("./routes/conversations");
+
+
+
+const uri =process.env.ATLAS_URI;
+mongoose.connect(uri,{useNewUrlParser:true});
+
+const connection=mongoose.connection;
+connection.once('open',()=>{
+    console.log("MongoDB database connected!!!");
+})
+
 app.use(cors())
+
+
+app.use("./messages", messageRoute);
+app.use("./conversations", conversationRoute);
+
+
+
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
