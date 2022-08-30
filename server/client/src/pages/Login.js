@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import hero from '../images/4112338.jpg'
-
+import axios from 'axios'
 
 const Login = () => {
     const [toggle, setToggle] = useState('login')
@@ -9,24 +9,34 @@ const Login = () => {
     const [password, setPassword] = useState('')
     const [confirm, setConfirm] = useState('')
 
+    const submit=(e)=>{
+        e.preventDefault()
+        if (toggle === 'login'){
+            login();
+        }else if(toggle ==='signup'){
+            signup();
+        }
+    }
     const login = () => {
-
+        axios.post('http:localhost:5000/login',{
+            
+        })
     }
 
     const signup = () => {
 
     }
 
-    return (<>
+    return (<div className=''>
         <h2
-            className='text-center  text-5xl text-green-700 font-semibold  italic pt-5 -mb-5'
+            className='text-center  text-5xl text-green-700 font-semibold  italic pt-5 m-0 -mb-5'
         >Tingg!!</h2>
-        <div className={`h-screen w-screen py-2 flex lg:flex-row  lg:justify-between justify-evenly flex-col items-center `}>
+        <div className={`  py-2 flex lg:flex-row  lg:justify-start justify-evenly flex-col items-center `}>
 
             <div className=' lg:w-1/2 lg:h-auto  lg:m-10 w-full my-5 '>
                 <img src={hero} alt="" />
             </div>
-            <div className='lg:w-1/3  w-11/12 my-10 lg:m-10 mx-auto  border-2 border-gray-600 p-2 rounded-lg bg-gray-400' >
+            <div className='lg:w-1/3  w-11/12 my-10 lg:my-10 mx-auto  border-2 border-gray-600 p-2 rounded-lg bg-gray-400' >
 
 
                 <div className='flex'>
@@ -44,12 +54,12 @@ const Login = () => {
                         placeholder='Password' />
                     <input className={`focus:outline-0 m-1 p-1 bg-gray-600 ${(toggle === 'login') ? 'hidden' : ''} `} type="text" name="" id="" value={confirm} onChange={(e)=>setConfirm(e.target.value)} 
                         placeholder='Confirm Password' />
-                    <input type="submit" value="Join" className='bg-gray-600 mx-1 my-3 p-1 border-2 border-gray-900 text-xl' />
+                    <input type="submit" onClick={e=>submit(e)} value="Join" className='bg-gray-600 mx-1 my-3 p-1 border-2 border-gray-900 text-xl' />
                 </form>
             </div>
 
 
-        </div></>
+        </div></div>
     )
 }
 

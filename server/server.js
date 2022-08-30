@@ -5,6 +5,7 @@ const cors = require('cors')
 const mongoose =require("mongoose");
 require ('dotenv').config();
 const messageRoute = require("./routes/messages");
+const userRoute = require("./routes/users");
 const conversationRoute = require("./routes/conversations");
 
 
@@ -20,8 +21,9 @@ connection.once('open',()=>{
 app.use(cors())
 
 
-app.use("./messages", messageRoute);
-app.use("./conversations", conversationRoute);
+app.use("/messages", messageRoute);
+app.use("/conversations", conversationRoute);
+app.use("/users", userRoute);
 
 
 

@@ -1,8 +1,8 @@
 const router = require("express").Router();
-const Conversation = require("../models/Conversation");
+const Conversation = require("../models/Conversation.model");
 
 
-router.get("/:userId", async (req, res) => {
+router.route("/:userId").get( async (req, res) => {
     try {
       const conversation = await Conversation.find({
         members: { $in: [req.params.userId] },
