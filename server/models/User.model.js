@@ -2,10 +2,12 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
-    username: {
+    userID: {
       type: String,
     },
-    
+    password:{
+      type:String,
+    },
   },
   { timestamps: true }
 );

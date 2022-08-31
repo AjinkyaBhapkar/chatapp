@@ -1,6 +1,6 @@
 const router = require("express").Router();
 let User = require('../models/User.model');
-
+const {hash,compare} =require ('bcryptjs')
 
 router.route('/').get((req, res) => {
     User.find()
@@ -8,6 +8,23 @@ router.route('/').get((req, res) => {
         .catch(err => res.status(400).json('Error' + err));
 
 });
+
+router.route('/signup').post(async (req,res)=>{
+    
+
+    let userID = req.body.u;
+    let password = await hash(req.body.password, 12);
+
+    const newUser = new User({
+        userID,
+        password
+    });
+
+    newUser.save()
+        .then(() => res.status(201).json('User added!'))
+        .catch(err => res.status(400).json('Error:' + err));
+
+})
 
 
 router.route('/login').post((req, res) => {
