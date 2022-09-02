@@ -12,7 +12,7 @@ router.route('/').get((req, res) => {
 router.route('/signup').post(async (req,res)=>{
     
 
-    let userID = req.body.u;
+    let userID = req.body.username;
     let password = await hash(req.body.password, 12);
 
     const newUser = new User({
@@ -28,7 +28,7 @@ router.route('/signup').post(async (req,res)=>{
 
 
 router.route('/login').post((req, res) => {
-    User.find({ username: req.body.username })
+    User.find({ userID: req.body.username })
         .then(async user => {
             const isValid = await compare(req.body.password, user[0].password)
             isValid ? 

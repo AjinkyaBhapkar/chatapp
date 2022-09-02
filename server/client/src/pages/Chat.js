@@ -1,6 +1,9 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 
 const Chat = () => {
+
+ 
   const sent='ml-auto mx-4 my-1 p-2 bg-gray-700 rounded-2xl max-w-[70%]'
   const received='mr-auto mx-4 my-1 p-2 bg-gray-500 rounded-2xl max-w-[70%]'
   return (
@@ -30,7 +33,7 @@ const Chat = () => {
            <p className={sent}>Lorem ipsum dolor sit.</p>
            <p className={sent}>Lorem </p>
            <p className={received}>Lorem ipsum dolor sit.</p>
-           
+           <p className={sent}> {useSelector(s=>s.user.username)}</p>
 
           </div>
           <div className='h-[8.33%] p-1.5 flex justify-evenly bg-gray-600'>

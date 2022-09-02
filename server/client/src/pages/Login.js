@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import hero from '../images/4112338.jpg'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { loginOut } from '../features/user/userSlice'
 
 const Login = () => {
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
     const [toggle, setToggle] = useState('login')
 
     const [username, setUsername] = useState('')
@@ -12,7 +17,7 @@ const Login = () => {
     const [users, setUsers] = useState([])
 
     const credentials = {
-        u: username,
+        username: username,
         password: password
     }
 
@@ -25,7 +30,7 @@ const Login = () => {
     useEffect(() => {
         axios.get('http://localhost:5000/users')
             .then(res => {
-                let takenUsernames=res.data.map(u=>u.userID)
+                let takenUsernames = res.data.map(u => u.userID)
                 setUsers(takenUsernames)
             })
             .catch(err => console.log(err))
@@ -38,7 +43,14 @@ const Login = () => {
     const login = () => {
 
         axios.post('http://localhost:5000/users/login', credentials)
-            .then(res => console.log(res))
+            .then(res => {
+                if (res.status === 200) {
+                    dispatch(loginOut(res.data[0].userID))
+                    navigate('/', { state: res.data[0].userID, replace: true })
+                    console.log(res)
+                }
+                console.log(res)
+            })
             .catch(err => console.log(err))
 
     }
@@ -49,6 +61,8 @@ const Login = () => {
             .then(res => { console.log(res) })
             .catch(err => console.log(err))
         // console.log(username+password)
+
+        setToggle('login')
     }
 
 
@@ -85,8 +99,8 @@ const Login = () => {
                 <form className='flex flex-col py-4 text-white'>
                     <input className='focus:outline-0 m-1 p-1 bg-gray-600 ' type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder='Username' />
 
-                    {(users.includes(username))&&(toggle === 'signup')?
-                    <p className='text-[8px] text-red-800 px-1'>Username already exist</p>:''}
+                    {(users.includes(username)) && (toggle === 'signup') ?
+                        <p className='text-[8px] text-red-800 px-1'>Username already exist</p> : ''}
 
                     <input className='focus:outline-0 m-1 p-1 bg-gray-600 ' type="Password" value={password} onChange={(e) => setPassword(e.target.value)}
                         placeholder='Password' />
