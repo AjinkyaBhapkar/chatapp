@@ -1,9 +1,15 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import {io} from 'socket.io-client'
 
 const Chat = () => {
 
- 
+  const [socket,setSocket]=useState(null)
+
+ useEffect(()=>{
+  setSocket(io('ws://localhost:5500'))
+ },[])
+
   const sent='ml-auto mx-4 my-1 p-2 bg-gray-700 rounded-2xl max-w-[70%]'
   const received='mr-auto mx-4 my-1 p-2 bg-gray-500 rounded-2xl max-w-[70%]'
   return (

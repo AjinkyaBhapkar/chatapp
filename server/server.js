@@ -29,8 +29,15 @@ app.use("/messages", messageRoute);
 app.use("/conversations", conversationRoute);
 app.use("/users", userRoute);
 
+const io =require('socket.io')(5500,{
+    cors: {
+        origin:'http://localhost:3000',
+    },
+})
 
-
+io.on('connection',(socket)=>{
+    console.log('user connected'+socket.id)
+})
 
 app.listen(port, () => {
     console.log(`Server started on ${port}`);
