@@ -9,12 +9,31 @@ const Chat = () => {
   const [socket, setSocket] = useState(null)
   const [conversations, setConversations] = useState([])
   const [currentConversation, setCurrentConversation] = useState('')
+  const [currentName, setCurrentName] = useState('')
   const [messages, setMessages] = useState([])
+  const [newText, setNewText] = useState('')
+
+
+  const fetch = () => {
+    const convo = conversations.filter(c => c._id === currentConversation)
+    const seder = convo[0].members.filter(c => c !== location._id)
+    axios.get('http://localhost:5000/users/' + seder[0])
+      .then(res => setCurrentName(res.data[0].userID))
+      .catch(err => console.log(err))
+
+  }
+
   useEffect(() => {
+    setNewText('')
     axios.get('http://localhost:5000/messages/' + currentConversation)
       .then(res => setMessages(res.data))
       .catch(err => console.log(err))
+    if (currentConversation !== '') {
+
+      fetch()
+    }
   }, [currentConversation])
+
 
   useEffect(() => {
     axios.get('http://localhost:5000/conversations/' + location._id)
@@ -32,6 +51,22 @@ const Chat = () => {
 
   const sent = 'ml-auto mx-4 my-1 p-2 bg-gray-700 rounded-2xl max-w-[70%]'
   const received = 'mr-auto mx-4 my-1 p-2 bg-gray-500 rounded-2xl max-w-[70%]'
+
+  const sendMessage = () => {
+    const text = {
+      "conversationId": currentConversation,
+      "sender": location._id,
+      "text": newText
+    }
+    axios.post('http://localhost:5000/messages/new', text)
+      .then(res => {
+        if (res.status === 200) {
+          setMessages([...messages, text])
+        }
+      })
+      .then(setNewText(''))
+      .catch(err => console.log(err))
+  }
   return (
     <div className='bg-black text-white'>
 
@@ -48,15 +83,17 @@ const Chat = () => {
         </div>
         <div className=' w-2/3 '>
 
-          <div className='h-[8.33%] bg-gray-600 col p-2'>Live Chat</div>
-          <div className='h-5/6 overflow-y-scroll no-scrollbar bg-gray-800 flex flex-col'>
+          <div className='h-[10%] bg-gray-600 col my-auto text-2xl flex items-center'>
+            <p className='px-4 font-semibold'>{currentName}</p>
+          </div>
+          <div className='h-[80%] overflow-y-scroll no-scrollbar bg-gray-800 flex flex-col'>
             {
               messages.map(m => {
                 if ((m.sender === location._id)) {
-                  return (<p className={sent}>{m.text}</p>)
+                  return (<p key={m._id} className={sent}>{m.text}</p>)
                 }
                 else {
-                  return (<p className={received}>{m.text}</p>)
+                  return (<p key={m._id} className={received}>{m.text}</p>)
                 }
               }
 
@@ -64,9 +101,11 @@ const Chat = () => {
             }
 
           </div>
-          <div className='h-[8.33%] p-1.5 flex justify-evenly bg-gray-600'>
-            <input className='w-3/4 px-4 rounded-full text-gray-800 focus:outline-0' type="text" placeholder='Message' />
-            <button className=' px-4 rounded-full bg-green-400'>Send</button>
+          <div className='h-[10%] p-1.5 flex justify-evenly bg-gray-600'>
+            <input className='w-3/4 px-4 my-1 rounded-full text-gray-800 focus:outline-0' type="text" placeholder='Message'
+              value={newText}
+              onChange={(e) => setNewText(e.target.value)} />
+            <button className=' px-4 my-1 rounded-full bg-green-400' onClick={sendMessage}>Send</button>
           </div>
         </div>
       </div>
