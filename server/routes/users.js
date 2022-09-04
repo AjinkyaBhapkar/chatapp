@@ -9,6 +9,12 @@ router.route('/').get((req, res) => {
 
 });
 
+router.route('/:userID').get((req,res)=>{
+    User.find({_id:req.params.userID})
+    .then(user=>res.status(200).json(user))
+    .catch(err=>res.status(500).json(err))
+})
+
 router.route('/signup').post(async (req,res)=>{
     
 

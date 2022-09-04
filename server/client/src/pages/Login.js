@@ -45,8 +45,8 @@ const Login = () => {
         axios.post('http://localhost:5000/users/login', credentials)
             .then(res => {
                 if (res.status === 200) {
-                    dispatch(loginOut(res.data[0].userID))
-                    navigate('/', { state: res.data[0].userID, replace: true })
+                    dispatch(loginOut({username:res.data[0].userID,id:res.data[0]._id}))
+                    navigate('/', { state: res.data[0], replace: true })
                     console.log(res)
                 }
                 console.log(res)
