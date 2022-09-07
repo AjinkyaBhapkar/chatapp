@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { io } from 'socket.io-client'
 import { useLocation } from 'react-router-dom'
 import axios from 'axios'
 import Conversation from '../components/Conversation'
+
+
+
 const Chat = () => {
   const location = useLocation().state
-  const [socket, setSocket] = useState(null)
+  // const [socket, setSocket] = useState(null)
   const [conversations, setConversations] = useState([])
   const [currentConversation, setCurrentConversation] = useState('')
   const [currentName, setCurrentName] = useState('')
   const [messages, setMessages] = useState([])
   const [newText, setNewText] = useState('')
-
+  const [arrivalMessage, setArrivalMessage] = useState(null)
+  const socket = useRef();
 
   const fetch = () => {
     const convo = conversations.filter(c => c._id === currentConversation)
@@ -24,11 +28,26 @@ const Chat = () => {
   }
 
   useEffect(() => {
+    if(currentConversation !=='' && arrivalMessage !== null){
+
+      const convo = conversations.filter(c => c._id === currentConversation)
+      const seder = convo[0].members.filter(c => c !== location._id)
+      if (seder[0] === arrivalMessage.sender) {
+        console.log('hii')
+        setMessages((prev) => [...prev, arrivalMessage])
+      }
+    }
+    
+  }, [arrivalMessage, currentConversation]);
+
+  useEffect(() => {
     setNewText('')
+    
+    if (currentConversation !== '') {
     axios.get('http://localhost:5000/messages/' + currentConversation)
       .then(res => setMessages(res.data))
       .catch(err => console.log(err))
-    if (currentConversation !== '') {
+    
 
       fetch()
     }
@@ -45,12 +64,22 @@ const Chat = () => {
 
 
   useEffect(() => {
-    setSocket(io('ws://localhost:5500'))
-    // console.log(location)
+    socket.current = io('ws://localhost:5500')
+    socket.current.emit("addUser", location._id);
+    socket.current.on("getMessage", (data) => {
+      console.log(data)
+      setArrivalMessage({
+        sender: data.text.sender,
+        text: data.text.text,
+        createdAt: Date.now(),
+      });
+    });
   }, [])
 
-  const sent = 'ml-auto mx-4 my-1 p-2 bg-gray-700 rounded-2xl max-w-[70%]'
-  const received = 'mr-auto mx-4 my-1 p-2 bg-gray-500 rounded-2xl max-w-[70%]'
+
+
+  const sent = 'ml-auto mx-4 my-0.5 px-3 pb-3 bg-gray-700 rounded-xl max-w-[70%]'
+  const received = 'mr-auto mx-4 my-0.5 px-3 pb-3 bg-gray-500 rounded-xl max-w-[70%]'
 
   const sendMessage = () => {
     const text = {
@@ -58,6 +87,16 @@ const Chat = () => {
       "sender": location._id,
       "text": newText
     }
+    const convo = conversations.filter(c => c._id === currentConversation)
+    const recv = convo[0].members.filter(c => c !== location._id)
+
+    // console.log(recv)
+    socket.current.emit("sendMessage", {
+      senderId: location._id,
+      receiverId: recv[0],
+      text
+    });
+
     axios.post('http://localhost:5000/messages/new', text)
       .then(res => {
         if (res.status === 200) {
@@ -89,11 +128,12 @@ const Chat = () => {
           <div className='h-[80%] overflow-y-scroll no-scrollbar bg-gray-800 flex flex-col'>
             {
               messages.map(m => {
+                console.log(m)
                 if ((m.sender === location._id)) {
-                  return (<p key={m._id} className={sent}>{m.text}</p>)
+                  return (<p key={m._id} className={sent}>{m.text} <span className='text-[0.5rem] relative top-3 pl-2 text-gray-400'>{String(m.createdAt).slice(11,16)}</span></p>)
                 }
                 else {
-                  return (<p key={m._id} className={received}>{m.text}</p>)
+                  return (<p key={m._id} className={received}>{m.text}<span className='text-[0.5rem] relative top-3 pl-2 text-gray-300'>{String(m.createdAt).slice(11,16)}</span></p>)
                 }
               }
 
