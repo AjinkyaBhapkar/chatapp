@@ -40,38 +40,51 @@ let users = [];
 const addUser = (userId, socketId) => {
     !users.some((user) => user.userId === userId) &&
         users.push({ userId, socketId });
+        console.log(users)
+        
 };
 
 const removeUser = (socketId) => {
     users = users.filter((user) => user.socketId !== socketId);
 };
 
-const getUser = (userId) => {
-    return users.find((user) => user.userId === userId);
+const getUser = (Id) => {
+    console.log(Id[0])
+    let fu= users.find((user) => user.userId === Id[0]);
+    console.log('fu')
+    console.log(fu)
+    return fu;
 };
 
 io.on('connection', (socket) => {
-    console.log('user connected' + socket.id)
+    // console.log('user connected' + socket.id)
 
     socket.on("addUser", (userId) => {
         addUser(userId, socket.id);
+        
         io.emit("getUsers", users);
     });
 
-    socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-        const user = getUser(receiverId);
-        io.to(user.socketId).emit("getMessage", {
+    socket.on("sendMessage", async({ senderId, receiverId, text }) => {
+        const user = await getUser(receiverId);
+        
+        if(user !== null && user !== undefined){io.to(user.socketId).emit("getMessage", {
             senderId,
             text,
-        });
+        });}
     })
+
 
     socket.on("disconnect", () => {
         console.log("a user disconnected!");
         removeUser(socket.id);
         io.emit("getUsers", users);
     });
+    
+
 })
+
+
 app.listen(port, () => {
     console.log(`Server started on ${port}`);
 });
