@@ -10,7 +10,7 @@ const Conversation = ({ conversation, user }) => {
 
   useEffect(() => {
 
-    axios.get('http://localhost:5000/users/' + ID[0])
+    axios.get('https://tinggg.herokuapp.com/users/' + ID[0])
       .then(res => { setName(res.data[0].userID) })
       .catch(err => console.log(err))
   }, [])

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useSelector,useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { io } from 'socket.io-client'
 
 import axios from 'axios'
@@ -9,9 +9,11 @@ import { useNavigate } from 'react-router-dom'
 
 
 const Chat = () => {
-  const dispatch =useDispatch()
-  const navigate =useNavigate()
+  const dispatch = useDispatch()
+  
+  const navigate = useNavigate()
   const [userID, setUserID] = useState(useSelector(s => s.user.username))
+  const [ID,setID]=useState(useSelector(s=>s.user.id))
   const [user, setUser] = useState(null)
   // const [socket, setSocket] = useState(null)
   const [conversations, setConversations] = useState([])
@@ -19,6 +21,10 @@ const Chat = () => {
   const [currentName, setCurrentName] = useState('')
   const [messages, setMessages] = useState([])
   const [newText, setNewText] = useState('')
+  const [newuser, setNewUsers] = useState([])
+  const [searchuser, setSearchUser] = useState('')
+  const [search, setSearch] = useState('')
+  const [allUsers, setAllUsers] = useState([])
   const [arrivalMessage, setArrivalMessage] = useState(null)
   const socket = useRef();
   const scrollRef = useRef();
@@ -26,11 +32,22 @@ const Chat = () => {
   const fetch = () => {
     const convo = conversations.filter(c => c._id === currentConversation)
     const seder = convo[0].members.filter(c => c !== user._id)
-    axios.get('http://localhost:5000/users/' + seder[0])
+    axios.get('https://tinggg.herokuapp.com/users/' + seder[0])
       .then(res => setCurrentName(res.data[0].userID))
       .catch(err => console.log(err))
 
   }
+
+  useEffect(() => {
+    axios.get('https://tinggg.herokuapp.com/users')
+      .then(res => {
+        let takenUsernames = res.data.map(u => u.userID )
+        
+        setAllUsers(res.data.filter(a=>a.userID !== userID))
+        setNewUsers(takenUsernames.filter(a=>a !== userID))
+      })
+      .catch(err => console.log(err))
+  }, [])
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -39,11 +56,11 @@ const Chat = () => {
 
   useEffect(() => {
     if (userID !== null && userID !== undefined) {
-      axios.get('http://localhost:5000/users')
-      .then(res => {
-        setUser(res.data.find(us => us.userID === userID))
-      })
-      .catch(err => console.log(err))
+      axios.get('https://tinggg.herokuapp.com/users')
+        .then(res => {
+          setUser(res.data.find(us => us.userID === userID))
+        })
+        .catch(err => console.log(err))
     }
   }, [userID])
 
@@ -64,7 +81,7 @@ const Chat = () => {
     setNewText('')
 
     if (currentConversation !== '') {
-      axios.get('http://localhost:5000/messages/' + currentConversation)
+      axios.get('https://tinggg.herokuapp.com/messages/' + currentConversation)
         .then(res => setMessages(res.data))
         .catch(err => console.log(err))
 
@@ -76,18 +93,19 @@ const Chat = () => {
 
   useEffect(() => {
     if (user !== null) {
-      axios.get('http://localhost:5000/conversations/' + user._id)
-      .then(res => {
-        setConversations(res.data)
-      })
-      .catch(err => console.log(err))
+      axios.get('https://tinggg.herokuapp.com/conversations/' + user._id)
+        .then(res => {
+          console.log("run")
+          setConversations(res.data)
+        })
+        .catch(err => console.log(err))
     }
-  }, [user])
+  }, [user,search])
 
 
   useEffect(() => {
     if (user !== null) {
-      socket.current = io('ws://localhost:5500')
+      socket.current = io('wss://tinggg.herokuapp.com')
       socket.current.emit("addUser", user._id)
       socket.current.on("getMessage", (data) => {
         console.log(data)
@@ -107,9 +125,9 @@ const Chat = () => {
   const sent = 'ml-auto mx-4 my-0.5 px-3 pb-3 bg-gray-700 rounded-xl max-w-[70%]'
   const received = 'mr-auto mx-4 my-0.5 px-3 pb-3 bg-gray-500 rounded-xl max-w-[70%]'
 
-  const selectedRecent=`lg:w-1/3 lg:h-full h-screen border border-gray-800 bg-gray-600 p-2  lg:block ${(currentConversation ==='')? '':'hidden'}`
+  const selectedRecent = `lg:w-1/3 lg:h-full h-screen border border-gray-800 bg-gray-600 p-2  lg:block ${(currentConversation === '') ? '' : 'hidden'}`
 
-  const selectedChat=`lg:w-2/3  h-full lg:block ${(currentConversation==='') ?'hidden':''} `
+  const selectedChat = `lg:w-2/3  h-full lg:block ${(currentConversation === '') ? 'hidden' : ''} `
 
   const sendMessage = () => {
     const text = {
@@ -128,7 +146,7 @@ const Chat = () => {
       text
     });
 
-    axios.post('http://localhost:5000/messages/new', text)
+    axios.post('https://tinggg.herokuapp.com/messages/new', text)
       .then(res => {
         if (res.status === 200) {
           setMessages([...messages, text])
@@ -140,14 +158,60 @@ const Chat = () => {
 
   const logout = () => {
     dispatch(loginOut({ username: '', id: '' }))
-    navigate('/login', {  replace: true })
+    navigate('/login', { replace: true })
   }
+
+  const searchClick=(u)=>{
+    let k=allUsers.find(a=>a.userID==u)
+    let valid=(conversations.find(c=>c.members.includes(k._id)))
+    if (valid !== undefined){
+      setSearch('')
+      setCurrentConversation(valid._id)
+    }
+    else if(valid === undefined){
+      axios.post('https://tinggg.herokuapp.com/conversations/new',{
+        "senderID":ID,
+        "receiverID":k._id
+      })
+      .then(async ()=>{
+
+        setSearch('')
+        setTimeout(()=>{
+        let newC= (conversations.find(c=>c.members.includes(k._id)))
+        
+          setCurrentConversation(newC._id)} ,3000)
+        
+      })
+    }
+  }
+
   return (
     <div className='bg-black text-white'>
 
       <div className='  h-screen lg:py-12 lg:w-4/6 w-screen m-auto lg:flex'>
         <div className={selectedRecent}>
-          <p>Recent chats</p>
+          <div className='flex justify-between'>
+            <p>Recent chats</p>
+            <button onClick={()=>setSearch(prev=>(prev==='')?'a':'')}>+</button>
+            <div className={(search==='')?'hidden ':'absolute'}>
+
+              <div className='  z-20 bg-slate-800 lg:w-48 w-[190%] '>
+                <input className=' w-full text-black' type="text" placeholder='Search User' value={searchuser} onChange={(e) => setSearchUser(e.target.value)} />
+                <div className=' h-60 overflow-scroll no-scrollbar'>
+
+                  {
+                    newuser.filter(a => (String(a).toLowerCase().includes(searchuser.toLowerCase())) ? a : '').map(u =>
+                    (<>
+                      <p onClick={()=>searchClick(u)} key={u} className=' border-b-[1px] border-gray-600 p-1'>{u}</p>
+
+                    </>
+                    )
+                    )
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
           <div className=' h-[85%] overflow-y-scroll no-scrollbar lg:py-4'>
 
             {conversations.map(c => (
@@ -162,7 +226,7 @@ const Chat = () => {
         <div className={selectedChat}>
 
           <div className='h-[10%] bg-gray-600 col my-auto text-2xl flex items-center'>
-            <p className='px-4 font-semibold'> <button onClick={()=> setCurrentConversation('') }> ← </button> {currentName}</p>
+            <p className='px-4 font-semibold'> <button onClick={() => setCurrentConversation('')}> ← </button> {currentName}</p>
           </div>
           <div className='h-[80%]  overflow-y-scroll no-scrollbar bg-gray-800 flex flex-col'>
             {

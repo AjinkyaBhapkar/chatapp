@@ -28,7 +28,7 @@ const Login = () => {
     }, [toggle])
 
     useEffect(() => {
-        axios.get('http://localhost:5000/users')
+        axios.get('https://tinggg.herokuapp.com/users')
             .then(res => {
                 let takenUsernames = res.data.map(u => u.userID)
                 setUsers(takenUsernames)
@@ -42,7 +42,7 @@ const Login = () => {
 
     const login = () => {
 
-        axios.post('http://localhost:5000/users/login', credentials)
+        axios.post('https://tinggg.herokuapp.com/users/login', credentials)
             .then(res => {
                 if (res.status === 200) {
                     dispatch(loginOut({username:res.data[0].userID,id:res.data[0]._id}))
@@ -57,7 +57,7 @@ const Login = () => {
 
     const signup = async () => {
 
-        axios.post('http://localhost:5000/users/signup', credentials)
+        axios.post('https://tinggg.herokuapp.com/users/signup', credentials)
             .then(res => { console.log(res) })
             .catch(err => console.log(err))
         // console.log(username+password)
@@ -78,7 +78,7 @@ const Login = () => {
     return (<div className=''>
         <h2
             className='text-center  text-5xl text-green-700 font-semibold  italic pt-5 m-0 -mb-5'
-        >Tingg!!</h2>
+        >Tinggg!!</h2>
         <div className={`  py-2 flex lg:flex-row  lg:justify-start justify-evenly flex-col items-center `}>
 
             <div className=' lg:w-1/2 lg:h-auto  lg:m-10 w-full my-5 '>
