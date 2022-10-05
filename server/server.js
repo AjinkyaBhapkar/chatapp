@@ -37,7 +37,9 @@ app.use("/users", userRoute);
 
 const io = new Server(server, {
     cors: {
-        origin: 'https://tinggg.herokuapp.com',
+        origin: '*',
+        transports: ["websocket"],
+        methods: ["GET", "POST"]
     },
 })
 
@@ -91,7 +93,14 @@ io.on('connection', (socket) => {
 })
 
 app.use(express.static(path.join(__dirname, "/client/build")));
-
+app.use((req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    
+  });
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '/client/build', 'index.html'));
 });
