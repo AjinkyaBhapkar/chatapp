@@ -1,3 +1,3 @@
 Credentials for testing
--user | Password1@
--Tester | Password1@
+-> user - Password1@
+-> Tester - Password1@
